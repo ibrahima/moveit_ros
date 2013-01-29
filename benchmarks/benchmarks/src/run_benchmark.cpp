@@ -48,6 +48,8 @@
 #include <boost/progress.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/math/constants/constants.hpp>
+#include <moveit/collision_distance_field/hybrid_collision_world.h>
+#include <moveit/collision_distance_field/hybrid_collision_robot.h>
 #include <fstream>
 
 static const std::string ROBOT_DESCRIPTION="robot_description";      // name of the robot description (a param name, so it can be changed externally)
@@ -58,12 +60,17 @@ class BenchmarkService
 {
 public:
   
-  BenchmarkService(void) : scene_monitor_(ROBOT_DESCRIPTION)
+  BenchmarkService(void) : planning_scene_(new planning_scene::PlanningScene()), scene_monitor_(planning_scene_, ROBOT_DESCRIPTION)
   {
     // initialize a planning scene
+
+    planning_scene_->setCollisionDetectionTypes<collision_detection::CollisionWorldHybrid, collision_detection::CollisionRobotHybrid>();
+    planning_scene_->clearDiffs();
+    // scene_monitor_(psp, ROBOT_DESCRIPTION);
     
     if (scene_monitor_.getPlanningScene())
     {
+      ROS_WARN("Planning scene collision world type %s", typeid(scene_monitor_.getPlanningScene()->getCollisionWorld()).name());
       // load the planning plugins
       try
       {
@@ -520,6 +527,8 @@ private:
   }
   
   ros::NodeHandle nh_;
+  planning_scene::PlanningScenePtr planning_scene_;
+
   planning_scene_monitor::PlanningSceneMonitor scene_monitor_;
   boost::shared_ptr<pluginlib::ClassLoader<planning_interface::Planner> > planner_plugin_loader_;
   std::map<std::string, boost::shared_ptr<planning_interface::Planner> > planner_interfaces_;
