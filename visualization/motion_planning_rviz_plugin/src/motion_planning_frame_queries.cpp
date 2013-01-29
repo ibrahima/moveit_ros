@@ -829,6 +829,7 @@ void MotionPlanningFrame::startStateItemDoubleClicked(QListWidgetItem * item)
   kinematic_state::KinematicStatePtr ks(new kinematic_state::KinematicState(*planning_display_->getQueryStartState()));
   kinematic_state::robotStateToKinematicState(start_states_[item->text().toStdString()].state_msg, *ks);
   planning_display_->setQueryStartState(*ks);
+  planning_display_->setQueryGoalState(*ks);
 }
 
 void MotionPlanningFrame::loadBenchmarkResults(void)
